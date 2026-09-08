@@ -1,0 +1,984 @@
+<title>Raio-X Ponta a Ponta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:ital,wght@0,400..700;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap">
+
+<style>
+  /* ============================================================
+     Raio-X Ponta a Ponta — camada visual
+     Registro terroso claro: osso rosado, óxido de ferro, índigo-tinta.
+     Lógica estrutural: documento emitido — campos, fios, versalete,
+     marcas de registro. Cantos retos em tudo.
+     ============================================================ */
+
+  :root {
+    color-scheme: light;
+
+    /* superfícies: tarja < folha < campo */
+    --paper: #EDE4DD;        /* folha: osso rosado — papel tingido, nunca branco */
+    --paper-sunk: #DFD8D5;   /* tarja rebaixada: blocos "com dono" */
+    --field: #F7F3F0;        /* campo preenchível, mais claro que a folha */
+
+    /* tintas */
+    --ink: #2B2429;          /* tinta ferro-gálica — carvão com veio violeta */
+    --ink-soft: #544A4C;     /* tinta clara: corpo secundário */
+    --ink-mute: #655A5D;     /* tinta apagada: rótulos em versalete */
+
+    /* fios */
+    --rule: #C0B4AE;
+    --rule-soft: #D8CFC9;
+
+    /* acento quente: óxido de ferro */
+    --accent: #8C3D2E;
+    --accent-soft: #DCB6A6;  /* óxido claro: hachura */
+    --accent-wash: #EFDBD2;  /* óxido lavado: fundo da passagem */
+    --accent-edge: #A9604B;  /* óxido médio: picote, sublinhado */
+
+    /* apoio frio: índigo-tinta */
+    --support: #30355C;
+    --support-wash: #DFDFE9;
+
+    --shadow: rgba(43, 36, 41, .20);
+
+    --f-display: "Familjen Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --f-body: "Newsreader", "Iowan Old Style", Charter, "Bitstream Charter", Georgia, "Times New Roman", serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+
+  /* Escuro pensado, não invertido: o chão vira quase-preto de veio violeta (não marrom
+     médio, que vira lama), o acento sobe para óxido claro e o índigo
+     sobe para azul-tinta. Em claro o campo é mais claro que a folha e a tarja
+     é mais escura; no escuro ambos sobem, porque abaixo do chão não há
+     para onde ir. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper: #191418;
+      --paper-sunk: #201A1F;
+      --field: #251E23;
+      --ink: #EFE6E1;
+      --ink-soft: #C7B8B4;
+      --ink-mute: #9B8C88;
+      --rule: #42383D;
+      --rule-soft: #2E272C;
+      --accent: #CF7F66;
+      --accent-soft: #6C3627;
+      --accent-wash: #301C17;
+      --accent-edge: #9A4F39;
+      --support: #9AA2CE;
+      --support-wash: #1B1D2B;
+      --shadow: rgba(0, 0, 0, .64);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper: #191418;
+    --paper-sunk: #201A1F;
+    --field: #251E23;
+    --ink: #EFE6E1;
+    --ink-soft: #C7B8B4;
+    --ink-mute: #9B8C88;
+    --rule: #42383D;
+    --rule-soft: #2E272C;
+    --accent: #CF7F66;
+    --accent-soft: #6C3627;
+    --accent-wash: #301C17;
+    --accent-edge: #9A4F39;
+    --support: #9AA2CE;
+    --support-wash: #1B1D2B;
+    --shadow: rgba(0, 0, 0, .64);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 17px;
+    font-weight: 430;
+    line-height: 1.65;
+    font-kerning: normal;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .wrap { max-width: 880px; margin: 0 auto; padding: 52px 34px 104px; }
+
+  /* ---- cabeçalho de despacho ---- */
+
+  .masthead {
+    padding-top: 26px;
+    background:
+      linear-gradient(var(--accent), var(--accent)) left top / 96px 3px no-repeat,
+      linear-gradient(var(--ink), var(--ink)) left top / 100% 3px no-repeat;
+  }
+
+  .kicker {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .kicker::before { content: ""; width: 7px; height: 7px; background: var(--accent); flex: none; }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(40px, 7vw, 64px);
+    line-height: 1.03;
+    letter-spacing: -.008em;
+    margin: 20px 0 0;
+    text-wrap: balance;
+  }
+
+  .sub {
+    font-family: var(--f-body);
+    font-weight: 400;
+    font-size: clamp(19px, 2.7vw, 21.5px);
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin: 16px 0 0;
+    max-width: 36ch;
+    text-wrap: pretty;
+  }
+
+  .meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    margin-top: 34px;
+    font-variant-numeric: tabular-nums;
+  }
+  .meta span {
+    background: var(--field);
+    padding: 14px 16px;
+    font-family: var(--f-mono);
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.45;
+    color: var(--ink-mute);
+  }
+  .meta b { color: var(--ink); font-weight: 500; }
+
+  /* ---- seções ---- */
+
+  section { margin-top: 72px; }
+
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(25px, 3.5vw, 31px);
+    line-height: 1.16;
+    letter-spacing: -.004em;
+    margin: 0 0 12px;
+    text-wrap: balance;
+  }
+
+  /* fio duplo com marca de óxido: a assinatura de seção */
+  .sec-rule {
+    height: 3px;
+    border: 0;
+    margin: 0 0 28px;
+    background:
+      linear-gradient(var(--accent), var(--accent)) left top / 52px 2px no-repeat,
+      linear-gradient(var(--ink), var(--ink)) left top / 100% 2px no-repeat,
+      linear-gradient(var(--rule-soft), var(--rule-soft)) left bottom / 100% 1px no-repeat;
+  }
+
+  p { max-width: 66ch; margin: 0 0 17px; text-wrap: pretty; }
+  p strong { font-weight: 600; }
+  .big { font-size: 19.5px; line-height: 1.58; color: var(--ink-soft); }
+  .big strong { color: var(--ink); }
+
+  /* ---- resumo: bloco homologado, com marcas de registro ---- */
+
+  .summary {
+    position: relative;
+    background: var(--field);
+    border: 1.5px solid var(--ink);
+    padding: 32px 36px;
+  }
+  .summary::before,
+  .summary::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid var(--accent);
+  }
+  .summary::before { top: 7px; left: 7px; border-right: 0; border-bottom: 0; }
+  .summary::after { bottom: 7px; right: 7px; border-left: 0; border-top: 0; }
+
+  .summary h2 {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: .17em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+  .summary ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 13px; }
+  .summary li {
+    position: relative;
+    padding-left: 24px;
+    font-size: 16.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+  .summary li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .68em;
+    width: 11px;
+    height: 2px;
+    background: var(--accent);
+  }
+  .summary li strong { color: var(--ink); font-weight: 600; }
+
+  /* ---- a costura: tese visual ----
+     Comercial e Comex são tarjas rebaixadas — território com dono.
+     A passagem é uma tira destacável: picote em cima e embaixo,
+     hachura suave por dentro, erguida acima da linha do processo. */
+
+  .seam {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: stretch;
+    gap: 0 34px;
+    margin: 38px 0 32px;
+    padding: 20px 0;
+  }
+  /* a linha do processo, visível apenas nos vãos */
+  .seam::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--rule);
+  }
+  .seam > div { position: relative; }
+
+  .seam-side {
+    background: var(--paper-sunk);
+    border: 1px solid var(--rule);
+    padding: 22px 24px;
+  }
+
+  .seam-mid {
+    margin: -18px 0;
+    padding: 26px 26px;
+    min-width: 210px;
+    max-width: 290px;
+    border-left: 1px solid var(--accent-edge);
+    border-right: 1px solid var(--accent-edge);
+    background-color: var(--accent-wash);
+    background-image:
+      repeating-linear-gradient(90deg, var(--accent-edge) 0 6px, transparent 6px 12px),
+      repeating-linear-gradient(90deg, var(--accent-edge) 0 6px, transparent 6px 12px),
+      repeating-linear-gradient(-45deg, var(--accent-soft) 0 1px, transparent 1px 15px);
+    background-size: 100% 2px, 100% 2px, auto;
+    background-position: 0 0, 0 100%, 0 0;
+    background-repeat: repeat-x, repeat-x, repeat;
+    box-shadow: 0 14px 28px -18px var(--shadow);
+  }
+  /* cabeças de seta: cada uma chega ao seu destino */
+  .seam-mid::before,
+  .seam-mid::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 12px;
+    height: 14px;
+    margin-top: -7px;
+    background: var(--accent);
+    clip-path: polygon(0 0, 100% 50%, 0 100%);
+  }
+  .seam-mid::before { left: -12px; }
+  .seam-mid::after { right: -34px; }
+
+  .seam h3 {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    margin: 0 0 11px;
+    color: var(--support);
+  }
+  .seam-mid h3 { color: var(--accent); }
+  .seam p { margin: 0; font-size: 15px; line-height: 1.55; color: var(--ink-soft); max-width: none; }
+  .seam-mid p { color: var(--ink); }
+  .seam-mid p strong {
+    color: var(--accent);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--accent-edge);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+  }
+
+  /* ---- entregáveis: fichas numeradas ---- */
+
+  .deliv { list-style: none; margin: 0; padding: 0; }
+  .deliv > li { padding: 30px 0; border-bottom: 1px solid var(--rule-soft); }
+  .deliv > li:first-child { border-top: 1px solid var(--rule-soft); }
+
+  .dhead { display: grid; grid-template-columns: 54px 1fr; align-items: baseline; gap: 0 8px; margin-bottom: 16px; }
+  .dn {
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    letter-spacing: .05em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .deliv h3 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 22px;
+    line-height: 1.24;
+    letter-spacing: -.004em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .dgrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(215px, 1fr));
+    gap: 20px 28px;
+    margin-left: 54px;
+  }
+  .dgrid > div { border-left: 1px solid var(--rule); padding-left: 17px; }
+  .dgrid h4 {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    margin: 0 0 7px;
+  }
+  .dgrid p { margin: 0; font-size: 15px; line-height: 1.58; color: var(--ink-soft); max-width: none; }
+  .dgrid p strong { color: var(--ink); font-weight: 600; }
+
+  /* ---- princípios (método: índigo) ---- */
+
+  .principles { list-style: none; margin: 0; padding: 0; }
+  .principles li {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    gap: 0 8px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+  .principles li:first-child { border-top: 1px solid var(--rule-soft); }
+  .pn {
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--support);
+    font-variant-numeric: tabular-nums;
+    padding-top: 5px;
+  }
+  .principles .pb { font-size: 16.5px; line-height: 1.6; color: var(--ink-soft); }
+  .principles .pb b { color: var(--ink); font-weight: 600; }
+  .principles .pb i { color: var(--ink); }
+
+  /* ---- cronograma ---- */
+
+  .weeks { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 30px 28px; }
+  .wk { position: relative; border-top: 1px solid var(--rule); padding-top: 15px; }
+  .wk::before { content: ""; position: absolute; top: -2px; left: 0; width: 36px; height: 3px; background: var(--support); }
+  .wk .n {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    display: block;
+    margin-bottom: 9px;
+  }
+  .wk p { font-size: 15px; line-height: 1.55; margin: 0; color: var(--ink-soft); max-width: none; }
+  .wk b { color: var(--ink); font-weight: 600; }
+
+  /* ---- tabelas de registro ---- */
+
+  .scroll {
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--rule) transparent;
+  }
+  table { width: 100%; min-width: 560px; border-collapse: collapse; margin: 0 0 20px; font-size: 15.5px; }
+  th {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--ink-mute);
+    text-align: left;
+    padding: 0 18px 11px 0;
+    border-bottom: 2px solid var(--ink);
+    white-space: nowrap;
+  }
+  td {
+    padding: 15px 18px 15px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    color: var(--ink-soft);
+    vertical-align: top;
+    line-height: 1.55;
+  }
+  td strong { color: var(--ink); font-weight: 600; }
+  .num {
+    text-align: right;
+    font-family: var(--f-mono);
+    font-size: 14px;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    padding-right: 0;
+    white-space: nowrap;
+  }
+  th.num { text-align: right; }
+
+  /* ---- colunas de requisitos (o que a Tamura fornece: índigo) ---- */
+
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 32px 38px; }
+  .cols h3 {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin: 0 0 15px;
+    padding-top: 12px;
+    border-top: 2px solid var(--ink);
+  }
+  .cols ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 11px; }
+  .cols li {
+    position: relative;
+    padding-left: 22px;
+    font-size: 15.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .cols li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: .66em;
+    width: 10px;
+    height: 2px;
+    background: var(--support);
+  }
+  .cols li strong { color: var(--ink); font-weight: 600; }
+  .cols li b { color: var(--ink); font-weight: 600; }
+
+  /* ---- investimento: bloco homologado ---- */
+
+  .price {
+    position: relative;
+    border: 2px solid var(--ink);
+    background: var(--field);
+    padding: 30px 36px 34px;
+    margin: 4px 0 30px;
+  }
+  .price::before,
+  .price::after {
+    content: "";
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    border: 1.5px solid var(--accent);
+  }
+  .price::before { top: 8px; left: 8px; border-right: 0; border-bottom: 0; }
+  .price::after { bottom: 8px; right: 8px; border-left: 0; border-top: 0; }
+  .price .label {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .price .amt {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(44px, 9vw, 66px);
+    line-height: 1.04;
+    letter-spacing: -.014em;
+    margin: 14px 0 10px;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .price .cond {
+    font-family: var(--f-mono);
+    font-size: 12.5px;
+    font-weight: 400;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    margin: 0;
+    max-width: none;
+  }
+
+  /* ---- blocos de observação ----
+     Regra semântica: índigo = método e o que o cliente fornece.
+     Óxido = o que a Orwen entrega e cobra. Regra de área: o índigo
+     nunca cobre mais superfície que o óxido na mesma página, por isso
+     só dois blocos são preenchidos; os demais ficam apenas com o fio. */
+
+  .note {
+    background: var(--support-wash);
+    border-left: 3px solid var(--support);
+    padding: 21px 26px;
+    margin: 30px 0 0;
+  }
+  .note p { margin: 0; font-size: 15.5px; line-height: 1.62; color: var(--ink-soft); max-width: 64ch; }
+  .note p + p { margin-top: 13px; }
+  .note strong { color: var(--ink); font-weight: 600; }
+
+  /* Sem preenchimento: reduz a área de índigo da página, mantendo o dono da cor. */
+  .note-flat { background: transparent; border-left-color: var(--support-edge, var(--support)); }
+
+  /* Óxido: usado onde o bloco fala do que a Orwen entrega e cobra. */
+  .note-accent { background: var(--accent-wash); border-left-color: var(--accent); }
+
+  /* ---- perguntas ---- */
+
+  .faq { margin: 0; }
+  .faq dt {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 1.3;
+    letter-spacing: -.003em;
+    margin: 0 0 10px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule-soft);
+    text-wrap: balance;
+  }
+  .faq dt:first-of-type { padding-top: 0; border-top: 0; }
+  .faq dd { margin: 0 0 28px; font-size: 16px; line-height: 1.62; color: var(--ink-soft); max-width: 66ch; }
+  .faq dd strong { color: var(--ink); font-weight: 600; }
+
+  footer {
+    margin-top: 80px;
+    padding-top: 24px;
+    background:
+      linear-gradient(var(--accent), var(--accent)) left top / 96px 2px no-repeat,
+      linear-gradient(var(--ink), var(--ink)) left top / 100% 2px no-repeat;
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    font-weight: 400;
+    color: var(--ink-mute);
+    line-height: 1.9;
+  }
+  footer b { color: var(--ink-soft); font-weight: 500; }
+  /* A marca segue a especificação: Familjen Grotesk 600, versal, tracking aberto
+     no corpo pequeno, tinta cheia. A monoespaçada fica com o CNPJ. */
+  footer .marca {
+    font-family: var(--f-display);
+    font-weight: 600;
+    letter-spacing: .18em;
+    margin-right: -.18em;
+    color: var(--ink);
+  }
+
+  @media (max-width: 760px) {
+    .seam { grid-template-columns: 1fr; gap: 30px 0; padding: 0; }
+    .seam::before { display: none; }
+    .seam-mid { margin: 0; max-width: none; min-width: 0; }
+    .seam-mid::before,
+    .seam-mid::after {
+      top: auto;
+      left: 50%;
+      right: auto;
+      margin: 0 0 0 -7px;
+      transform: rotate(90deg);
+    }
+    .seam-mid::before { top: -22px; }
+    .seam-mid::after { bottom: -22px; }
+  }
+
+  @media (max-width: 680px) {
+    body { font-size: 16.5px; }
+    .wrap { padding: 34px 20px 76px; }
+    .dgrid { margin-left: 0; }
+    .dhead { grid-template-columns: 42px 1fr; }
+    .principles li { grid-template-columns: 42px 1fr; }
+    .summary { padding: 26px 22px; }
+    .price { padding: 26px 22px 28px; }
+    section { margin-top: 58px; }
+  }
+
+  @media print {
+    .summary, .price, .note, .seam, .wk, .deliv > li, .principles li, table { break-inside: avoid; }
+    section { break-inside: auto; }
+    .seam-mid { box-shadow: none; }
+    .scroll { overflow-x: visible; }
+    table { min-width: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="kicker">Proposta · Tamura · Comercial e Comex</div>
+    <h1>Raio-X Ponta a Ponta</h1>
+    <p class="sub">Um retrato de como a operação funciona hoje, e o plano priorizado do que automatizar nos 90 dias seguintes. Quatro semanas, cinco documentos.</p>
+    <div class="meta">
+      <span>5 de setembro de 2026</span>
+      <span>Prazo: <b>4 semanas</b></span>
+      <span>Formato: <b>100% remoto</b></span>
+      <span>Investimento: <b>R$ 14.000</b></span>
+      <span>Validade: <b>30 dias</b></span>
+    </div>
+  </header>
+
+  <section>
+    <div class="summary">
+      <h2>Em resumo</h2>
+      <ul>
+        <li><strong>O que é:</strong> um trabalho de quatro semanas, <strong>inteiramente remoto</strong>, que mapeia como Comercial e Comex trabalham hoje, mede o custo do que é feito à mão, e entrega um plano priorizado de automação e IA para os 90 dias seguintes.</li>
+        <li><strong>O que não é:</strong> este trabalho <strong>não constrói automação nenhuma.</strong> Ele entrega o mapa da operação e o plano do que fazer com ele. A construção, se vocês quiserem, é uma etapa separada, com escopo, prazo e preço próprios, definidos só depois que esta terminar.</li>
+        <li><strong>O que vai incomodar:</strong> parte do que hoje é feito à mão não deve ser automatizada. Deve parar. O blueprint lista essa parte separada, e ela costuma ser a economia mais barata do conjunto.</li>
+        <li><strong>Por que as duas áreas juntas:</strong> porque o desperdício mais caro costuma estar na passagem entre elas, e um trabalho por área não enxerga essa passagem.</li>
+        <li><strong>O que fica com vocês:</strong> cinco documentos, incluindo um plano com estimativa de esforço em horas de desenvolvimento por item — executável por qualquer time, interno ou não.</li>
+        <li><strong>Investimento:</strong> R$ 14.000, escopo fechado, pago em três marcos.</li>
+        <li><strong>Compromisso:</strong> nenhum número vira conclusão sem ser homologado por vocês antes.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>O que vamos olhar</h2>
+    <hr class="sec-rule">
+    <p class="big">Você procurou a gente para dar mais processo ao time do Comercial. Ao desenhar como fazer isso, uma coisa ficou clara: <strong>parte do que trava o Comercial não está dentro dele.</strong> Está na passagem para o Comex — e o mesmo vale no sentido contrário.</p>
+
+    <div class="seam">
+      <div class="seam-side">
+        <h3>Comercial</h3>
+        <p>Cotação, negociação, fechamento. Tem dono, tem meta, tem sistema.</p>
+      </div>
+      <div class="seam-mid">
+        <h3>A passagem</h3>
+        <p>Pedido fechado vira processo. Dado é redigitado, prazo é assumido, informação se perde. <strong>Ninguém é dono deste pedaço.</strong></p>
+      </div>
+      <div class="seam-side">
+        <h3>Comex</h3>
+        <p>Documentação, despacho, embarque, follow-up. Tem dono, tem prazo, tem sistema.</p>
+      </div>
+    </div>
+
+    <p>É por isso que é uma proposta só, e não duas. Olhar apenas o Comercial mostraria metade do problema — e a metade mais fácil. É na costura que aparecem o retrabalho, o prazo estourado e o pedido que volta.</p>
+  </section>
+
+  <section>
+    <h2>O que vocês recebem</h2>
+    <hr class="sec-rule">
+    <p>Cinco documentos. Para cada um: o que é, como é produzido, e o que vocês fazem com ele.</p>
+
+    <ol class="deliv">
+
+      <li>
+        <div class="dhead"><span class="dn">01</span><h3>Mapa do processo real</h3></div>
+        <div class="dgrid">
+          <div><h4>O que é</h4><p>Como o trabalho acontece de fato nas duas áreas, lado a lado com o processo oficial.</p></div>
+          <div><h4>Como é feito</h4><p>Entrevista de cerca de 1h com até 6 pessoas do Comercial e as 3 do Comex, mais observação dirigida por compartilhamento de tela — acompanhamos o trabalho acontecendo, sem interromper. Tudo por chamada de vídeo. Em cada entrevista vão duas pessoas nossas: quem conduz e o desenvolvedor.</p></div>
+          <div><h4>Para que serve</h4><p>Sem ele, qualquer automação automatiza o processo <strong>do papel</strong> e não o que existe na prática. Todo o resto depende deste.</p></div>
+        </div>
+      </li>
+
+      <li>
+        <div class="dhead"><span class="dn">02</span><h3>O que se perde entre Comercial e Comex</h3></div>
+        <div class="dgrid">
+          <div><h4>O que é</h4><p>O que escapa na passagem entre as duas áreas: quantas vezes por mês, em que ponto, e a que custo.</p></div>
+          <div><h4>Como é feito</h4><p>Rastreamento de 12 pedidos, do fechamento comercial até o embarque, escolhidos por vocês entre os últimos 3 meses.</p></div>
+          <div><h4>Para que serve</h4><p>É o entregável que <strong>só existe porque o trabalho é único</strong>. Análise por área não o produz.</p></div>
+        </div>
+      </li>
+
+      <li>
+        <div class="dhead"><span class="dn">03</span><h3>Inventário de sistemas e integrações</h3></div>
+        <div class="dgrid">
+          <div><h4>O que é</h4><p>O mapa técnico do que existe: o que cada sistema faz, o que tem API, o que tem banco acessível, o que está fechado. E onde há histórico suficiente para sustentar um modelo de IA, caso ele venha a ser recomendado.</p></div>
+          <div><h4>Como é feito</h4><p>Duas sessões com quem cuida dos sistemas internos, conduzidas pela nossa liderança técnica com o desenvolvedor junto, mais análise direta. Cobre também o que encosta em portal do governo (Siscomex / Portal Único), despachante externo e câmbio bancário, cada um classificado como automatizável, automatizável com restrição, ou fora de alcance, com o motivo escrito. Se algum sistema não tiver ninguém do lado de vocês que responda por ele, registramos o que dá para observar de fora e dizemos o que ficou sem resposta.</p></div>
+          <div><h4>Para que serve</h4><p>Diz o que dá para automatizar e o que não dá, com o motivo técnico de cada caso, <strong>antes</strong> de alguém prometer prazo ou resultado.</p></div>
+        </div>
+      </li>
+
+      <li>
+        <div class="dhead"><span class="dn">04</span><h3>Baseline homologado</h3></div>
+        <div class="dgrid">
+          <div><h4>O que é</h4><p>Os números da situação atual: horas por mês em cada tarefa manual e o desfecho de uma amostra real de oportunidades e processos.</p></div>
+          <div><h4>Como é feito</h4><p>A partir das entrevistas e de exportações dos sistemas. Quando a equipe for maior que a amostra, <strong>o método de extrapolação é declarado</strong> e homologado junto.</p></div>
+          <div><h4>Para que serve</h4><p>É a régua. Todo ganho futuro se mede contra ele — e ele é <strong>assinado por vocês antes de virar conclusão</strong>.</p></div>
+        </div>
+      </li>
+
+      <li>
+        <div class="dhead"><span class="dn">05</span><h3>Blueprint de automação e IA para 90 dias, com business case por item</h3></div>
+        <div class="dgrid">
+          <div><h4>O que é</h4><p>As candidatas, ordenadas por retorno sobre esforço. Cada uma marcada pelo destino: integração, regra de negócio, modelo de IA, ou <strong>desligar</strong>, para a tarefa que não precisa continuar existindo.</p></div>
+          <div><h4>O que traz por item</h4><p>Tipo de solução · ganho de produtividade em horas e em reais · receita em risco, medida · recuperação esperada, declarada como premissa · risco de execução · <strong>faixa de esforço em horas de desenvolvimento</strong>.</p></div>
+          <div><h4>Para que serve</h4><p>Com ele vocês decidem o que fazer, em que ordem, com que tecnologia, e se vale fazer dentro ou fora de casa.</p></div>
+        </div>
+      </li>
+
+    </ol>
+
+    <div class="note note-flat">
+      <p><strong>Sobre a linha de receita.</strong> Automação de processo entrega, primeiro, produtividade e confiabilidade. O efeito em receita é real, mas indireto — e por isso o blueprint separa duas coisas que costumam vir misturadas. <strong>Receita em risco</strong> é medida: oportunidade perdida por demora de resposta, cotação não respondida, follow-up que não aconteceu, embarque atrasado que custou o cliente — tudo contado na amostra do item 04. <strong>Recuperação esperada</strong> é uma premissa, e vem declarada como tal: a taxa aplicada sobre o valor em risco aparece escrita, com a faixa e a razão, para vocês aceitarem ou trocarem pela de vocês. Onde não houver dado para medir o valor em risco, o documento diz isso e a linha fica em branco.</p>
+    </div>
+
+    <div class="note note-flat">
+      <p><strong>Sobre IA.</strong> Nem todo problema precisa de um modelo. Boa parte do que trava uma operação se resolve com integração e regra de negócio: custa horas de desenvolvimento, roda igual todo dia, e quando quebra dá para ver onde. Mas há trabalho que só um modelo faz bem. Ler um documento e tirar dele o que importa, por exemplo. Ou conferir duas vias do mesmo pedido que não batem.</p>
+      <p>Quando o blueprint recomendar IA, ele diz <strong>por que aquele caso pede um modelo</strong>, o que acontece quando o modelo erra, e onde entra a conferência humana. Onde a regra resolver, a recomendação é a regra. <strong>Não vendemos modelo por moda</strong> — e o tipo de solução vem marcado item a item para que a decisão seja tomada assim também: um a um, e não em bloco.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Como trabalhamos</h2>
+    <hr class="sec-rule">
+    <p>Quatro regras que valem para todo o trabalho, e que existem para proteger vocês.</p>
+
+    <ol class="principles">
+      <li>
+        <div class="pn">01</div>
+        <div class="pb"><b>Campo antes de conclusão.</b> Nas duas primeiras semanas só escutamos e observamos. Nenhuma recomendação é feita antes de o processo real estar mapeado.</div>
+      </li>
+      <li>
+        <div class="pn">02</div>
+        <div class="pb"><b>Nada vira conclusão sem homologação.</b> O baseline é fechado na semana 3 e apresentado a vocês para aprovação <i>antes</i> de virar análise. Divergência sobre um número entra com o dado que a sustenta. O que der para recalcular na própria sessão, recalculamos ali; o resto volta por escrito em até 3 dias úteis, numa rodada. Se o dado não existir, o número fica registrado como premissa, com a divergência anotada ao lado. Nada é fechado por insistência, de nenhum dos dois lados.</div>
+      </li>
+      <li>
+        <div class="pn">03</div>
+        <div class="pb"><b>Um ponto de contato único.</b> Todo o trabalho passa pelo Miguel: agenda, dúvidas, pedidos, status. Outras pessoas nossas participam das entrevistas e das sessões técnicas, mas <b>qualquer pedido continua entrando por um canal só</b> — vocês nunca precisam descobrir com quem falar. Se a pessoa do ponto de contato mudar durante o trabalho, vocês são avisados no mesmo dia e quem entra assume com o material já registrado: notas, gravações e dados ficam num repositório do projeto desde o primeiro dia.</div>
+      </li>
+      <li>
+        <div class="pn">04</div>
+        <div class="pb"><b>Escopo fechado, com preço fechado.</b> O que está nesta proposta é o que será entregue pelo valor acordado. O que aparecer no meio do caminho é orçado à parte, com número, antes de qualquer execução.</div>
+      </li>
+    </ol>
+
+    <div class="note note-accent">
+      <p><strong>Retorno semanal por escrito.</strong> Toda sexta-feira vocês recebem um resumo de uma página: o que andou, o que travou, e o que vem na semana seguinte. Não é preciso reunião para acompanhar o andamento.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Cronograma</h2>
+    <hr class="sec-rule">
+    <div class="weeks">
+      <div class="wk">
+        <span class="n">Semana 1</span>
+        <p><b>Campo no Comex.</b> Entrevistas com as 3 pessoas, observação dirigida e primeira sessão técnica. Miguel e Luis em todas as sessões.</p>
+      </div>
+      <div class="wk">
+        <span class="n">Semana 2</span>
+        <p><b>Campo no Comercial.</b> Entrevistas com até 6 pessoas, observação e reconstrução do funil por amostragem. Miguel e Luis em todas as sessões.</p>
+      </div>
+      <div class="wk">
+        <span class="n">Semana 3</span>
+        <p><b>Baseline e passagem.</b> Números fechados, rastreamento dos 12 pedidos, segunda sessão técnica e <b>homologação com vocês</b>.</p>
+      </div>
+      <div class="wk">
+        <span class="n">Semana 4</span>
+        <p><b>Blueprint e entrega.</b> Priorização, business case, faixa de esforço e apresentação final com as duas áreas. <b>Aqui o trabalho termina</b> — o que vier depois é contratado à parte.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Quem faz o quê</h2>
+    <hr class="sec-rule">
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Pessoa</th><th>Papel</th><th>Onde atua neste trabalho</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Miguel Dias</strong></td>
+            <td>Campo e relacionamento</td>
+            <td><strong>É o ponto de contato de vocês.</strong> Conduz as entrevistas e a observação nas duas áreas, coleta os dados e monta o baseline. Conduz o campo nas semanas 1 e 2, e acompanha o trabalho até a entrega.</td>
+          </tr>
+          <tr>
+            <td><strong>Luis</strong></td>
+            <td>Desenvolvimento</td>
+            <td><strong>Acompanha o Miguel nas entrevistas e nas sessões técnicas</strong>, identificando onde o sistema trava o trabalho. Não conduz a conversa: observa e pergunta o que for técnico. É quem construiria a automação depois — e por isso ouve o problema na origem, em vez de recebê-lo por escrito semanas depois.</td>
+          </tr>
+          <tr>
+            <td><strong>Kevin</strong></td>
+            <td>Liderança técnica</td>
+            <td>Inventário de sistemas, viabilidade de integração e faixa de esforço por automação. Conduz as sessões técnicas nas semanas 1 e 3, com o Luis.</td>
+          </tr>
+          <tr>
+            <td><strong>Lucas</strong></td>
+            <td>Responsável pela conta</td>
+            <td>Análise, priorização do blueprint e business case. Responde por escopo e por preço. Participa da homologação do baseline e da apresentação final, em janela agendada.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>O que precisamos de vocês</h2>
+    <hr class="sec-rule">
+    <div class="cols">
+      <div>
+        <h3>Pessoas</h3>
+        <ul>
+          <li>Um responsável nomeado por área, como ponto de contato do lado de vocês</li>
+          <li>~1h de entrevista com <strong>até 6 pessoas do Comercial</strong> e com as 3 do Comex. Vocês escolhem quem</li>
+          <li>Mais ~1h de observação por compartilhamento de tela com 4 dessas pessoas, enquanto trabalham. É acompanhamento, não interrupção, e conta uma vez por pessoa</li>
+          <li>Duas sessões de 1h com quem cuida dos sistemas internos. <strong>Se algum sistema for mantido por fornecedor externo</strong>, precisamos saber antes do início — a participação dele pode ter custo próprio, e isso é combinado com vocês, nunca assumido</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Acessos e dados</h3>
+        <ul>
+          <li>Leitura nos sistemas usados pelas duas áreas</li>
+          <li>Exportação das oportunidades do Comercial e dos processos do Comex dos últimos 3 meses — é dessa base que sai a amostra de 12 pedidos rastreados</li>
+          <li>Documentação existente, mesmo que desatualizada</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Decisão</h3>
+        <ul>
+          <li>Homologação do baseline na semana 3. <strong>É o que trava o cronograma do nosso lado</strong>, junto com o acesso de leitura e a indicação dos responsáveis por área. Combinamos 5 dias úteis para essa aprovação, contados da entrega do baseline. Passado esse prazo, o cronograma desloca dia a dia, pelo número de dias corridos que a homologação demorar além dos cinco, sem custo adicional para vocês e sem que conte como atraso nosso. Se, decorridos os 5 dias úteis, não houver manifestação, o baseline é considerado homologado e a semana 4 começa.</li>
+          <li>Presença das duas áreas na apresentação da semana 4</li>
+          <li>As duas sessões de decisão — homologação na semana 3 e apresentação na semana 4 — são conduzidas pelo Miguel, com o Lucas em janela agendada de 45 minutos. Os horários das duas ficam definidos junto com vocês no aceite, e não no meio do caminho.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Investimento</h2>
+    <hr class="sec-rule">
+
+    <div class="price">
+      <div class="label">Raio-X Ponta a Ponta · escopo fechado</div>
+      <div class="amt">R$ 14.000</div>
+      <p class="cond">Quatro semanas · cinco entregáveis · até 6 pessoas do Comercial e as 3 do Comex</p>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Marco</th><th>Quando</th><th class="num">%</th><th class="num">Valor</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Assinatura</strong></td><td>Antes do início do campo</td><td class="num">45%</td><td class="num">R$ 6.300</td></tr>
+          <tr><td><strong>Baseline homologado</strong></td><td>Semana 3</td><td class="num">30%</td><td class="num">R$ 4.200</td></tr>
+          <tr><td><strong>Apresentação e entrega</strong></td><td>Semana 4</td><td class="num">25%</td><td class="num">R$ 3.500</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>O primeiro marco é pago em até 5 dias corridos do envio da cobrança, e o campo começa com ele compensado. Os demais, em até 7 dias corridos a contar da entrega de cada marco. <strong>Não há custo de deslocamento:</strong> todo o trabalho é remoto.</p>
+
+    <div class="note note-accent">
+      <p><strong>O que está fechado neste preço.</strong> Entrevistas e observação remota com até 6 pessoas do Comercial e as 3 do Comex, o inventário dos sistemas usados pelas duas áreas, o rastreamento de 12 pedidos, e os cinco entregáveis descritos acima.</p>
+      <p>Áreas adicionais, outras unidades ou ampliação da amostra além dos 12 pedidos são orçadas à parte, com número fechado, antes de qualquer execução. <strong>Nada entra em escopo sem passar por preço.</strong></p>
+    </div>
+  </section>
+
+  <section>
+    <h2>O que acontece depois</h2>
+    <hr class="sec-rule">
+    <p class="big">O blueprint é de vocês, e sai pronto para ser executado por qualquer time — interno ou não. <strong>Cada item vem com uma faixa de esforço em horas de desenvolvimento</strong>, com a premissa técnica que a sustenta, para que a decisão de fazer dentro ou fora seja tomada com ordem de grandeza na mão.</p>
+    <p>Se a implementação for conosco, o passo seguinte é um piloto: <strong>uma automação, ponta a ponta, medida contra o baseline</strong>, com manual de operação e um responsável nomeado do lado de vocês. Escopo e preço saem na apresentação da semana 4, quando os dois lados já souberem exatamente do que se trata.</p>
+    <div class="note">
+      <p><strong>Nada disso é automático.</strong> A conversa sobre implementação só acontece se o baseline for homologado e o blueprint fizer sentido para vocês. Se não fizer, o trabalho termina na semana 4 e vocês ficam com os cinco documentos — que continuam valendo, tenham ou não uma etapa seguinte.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Perguntas que costumam aparecer</h2>
+    <hr class="sec-rule">
+    <dl class="faq">
+      <dt>Por que não começar direto pela automação?</dt>
+      <dd>Porque automatizar sem baseline é automatizar no escuro: não dá para estimar esforço em um sistema que ninguém abriu, nem provar resultado depois sem saber o ponto de partida. As quatro semanas deste trabalho são o que torna a etapa seguinte estimável e mensurável — e o que permite <strong>desistir dela com informação</strong>, se for o caso.</dd>
+
+      <dt>Isso vai atrapalhar o dia a dia do time?</dt>
+      <dd>Uma hora de entrevista por pessoa, uma vez. Com quatro dessas pessoas, mais uma hora de observação por compartilhamento de tela, acompanhando o trabalho sem interromper. <strong>Tudo remoto</strong>: ninguém recebe visita, ninguém para a operação para receber consultor, e as agendas se resolvem em intervalos de uma hora. O maior pedido de tempo não é do time. É a <strong>homologação do baseline na semana 3</strong>, que exige uma sessão com você e com o responsável do Comex.</dd>
+
+      <dt>Por que duas pessoas em cada entrevista?</dt>
+      <dd>Porque quem vai construir precisa ouvir o problema na origem. Um de nós conduz a conversa; o desenvolvedor acompanha e entra só nas perguntas técnicas — por que aquele campo é preenchido à mão, de onde vem aquele dado, o que acontece quando o sistema erra. Isso evita o modo de falha mais comum desse tipo de projeto: o problema chegar a quem programa já filtrado por três camadas de documento, semanas depois, sem o detalhe que importava. <strong>O tempo pedido continua sendo uma hora, uma vez.</strong></dd>
+
+      <dt>E se a gente quiser executar o blueprint internamente?</dt>
+      <dd>É para isso que ele é feito. Cada item traz a estimativa de esforço em horas de desenvolvimento e o que precisa estar disponível para executá-lo. O documento é de vocês, e não depende de nos contratar para a etapa seguinte.</dd>
+
+      <dt>Por que até 6 pessoas do Comercial, e não todas?</dt>
+      <dd>Porque amostra bem escolhida é mais rápida e igualmente confiável, e mantém o preço fechado. Vocês escolhem quem — e, se a equipe for maior que a amostra, o documento declara como os números foram extrapolados, com o método escrito.</dd>
+
+      <dt>O que acontece se o resultado não justificar seguir?</dt>
+      <dd>O trabalho termina na semana 4 e vocês ficam com os cinco documentos. Um blueprint que conclui "não vale automatizar isso agora" é um resultado legítimo, e mais barato do que descobrir a mesma coisa no meio de um projeto de implementação.</dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2>Como seguir</h2>
+    <hr class="sec-rule">
+    <p>Para começar, basta responder a este documento confirmando o aceite. A partir dele:</p>
+    <div class="cols">
+      <div>
+        <h3>Em até 2 dias úteis</h3>
+        <ul>
+          <li>Enviamos o contrato e a cobrança do primeiro marco</li>
+          <li>Vocês indicam o responsável nomeado de cada área</li>
+          <li>Definimos juntos as datas das quatro semanas e os horários das duas sessões de decisão — <strong>nos digam a semana de pico do Comex</strong> para não marcarmos o campo em cima do fechamento</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Em até 7 dias úteis</h3>
+        <ul>
+          <li>Começa o campo, com o primeiro marco compensado</li>
+          <li>Primeiro retorno semanal por escrito na sexta-feira seguinte</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Condições</h3>
+        <ul>
+          <li>Valores com impostos inclusos, com nota fiscal de serviço emitida a cada marco <b>(Simples Nacional — MEI)</b></li>
+          <li>Dúvidas sobre esta proposta: Lucas · <b>lucas.uzita14@gmail.com</b> · <b>(11) 94031-0907</b></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <b class="marca">ORWEN</b> · CNPJ <b>37.467.374/0001-21</b><br>
+    Emitida em 5 de setembro de 2026 · válida até 5 de outubro de 2026.<br>
+    Confidencialidade recíproca: nada do que virmos dentro da Tamura sai daqui, e todo o material produzido é de propriedade da Tamura. Os dados exportados para este trabalho ficam em repositório restrito do projeto e são devolvidos ou destruídos ao final, a critério de vocês.
+  </footer>
+
+</div>
